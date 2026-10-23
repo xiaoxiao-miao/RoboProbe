@@ -2851,18 +2851,35 @@ def test_a_planner_name_carries_the_model_and_the_surface_it_answers_on():
     assert kimi["reasoning_effort"] == "high"
     assert kimi["timeout_s"] == 180.0
 
-    assert set(PLANNERS) == {"astra", "gpt55", "kimi"}
+    deepseek = client_config_from_env(
+        _env(
+            {
+                "L3_INSPECT_PLANNER": "deepseek",
+                "L3_INSPECT_BASE_URL": "https://api.deepseek.com",
+            }
+        )
+    )
+    assert deepseek["model"] == "deepseek-flash"
+    assert deepseek["azure_endpoint"] == "https://api.deepseek.com"
+    assert deepseek["api_key_env"] == "DEEPSEEK_API_KEY"
+    assert deepseek["provider"] == "openai"
+    assert deepseek["pin_session"] is False
+    assert deepseek["reasoning_effort"] == "high"
+    assert deepseek["timeout_s"] == 180.0
+
+    assert set(PLANNERS) == {"astra", "gpt55", "kimi", "deepseek"}
     # astra vs gpt55 is about the model, so those two share the surface.
     aidp = {
         (name, p.api_style, p.api_version)
         for name, p in PLANNERS.items()
-        if name != "kimi"
+        if name not in {"kimi", "deepseek"}
     }
     assert aidp == {
         ("astra", "responses", "2024-03-01-preview"),
         ("gpt55", "responses", "2024-03-01-preview"),
     }
     assert PLANNERS["kimi"].api_style == "responses"
+    assert PLANNERS["deepseek"].api_style == "responses"
 
     # Still overridable one key at a time, which is how a model is tried
     # before it earns a name here.
@@ -2923,6 +2940,37 @@ def test_kimi_maps_medium_effort_and_omits_aidp_session_headers(monkeypatch):
     assert request["reasoning"] == {"effort": "high"}
     assert "extra_headers" not in request
     assert captured[0]["__client__"]["base_url"] == "https://api.moonshot.cn/v1"
+
+
+def test_deepseek_keeps_none_effort_and_omits_aidp_session_headers(monkeypatch):
+    captured: list[dict] = []
+    _fake_responses_that_records_create(monkeypatch, captured)
+    client = AzureAgentClient.from_env(
+        _env({
+            "L3_INSPECT_PLANNER": "deepseek",
+            "L3_INSPECT_BASE_URL": "https://api.deepseek.com",
+            "DEEPSEEK_API_KEY": "deepseek-secret",
+            "L3_INSPECT_REASONING_EFFORT": "none",
+        })
+    )
+
+    assert client.session_id is None
+    assert client.provider == "openai"
+    assert client.reasoning_effort == "none"
+    client.complete([], [])
+    request = captured[-1]
+    assert request["reasoning"] == {"effort": "none"}
+    assert "extra_headers" not in request
+    assert captured[0]["__client__"]["base_url"] == "https://api.deepseek.com"
+
+    with pytest.raises(InfrastructureFailure, match="DeepSeek"):
+        client_config_from_env(
+            _env({
+                "L3_INSPECT_PLANNER": "deepseek",
+                "L3_INSPECT_BASE_URL": "https://api.deepseek.com",
+                "L3_INSPECT_REASONING_EFFORT": "extreme",
+            })
+        )
 
 
 def test_the_audit_config_reports_the_planner_it_actually_ran():

@@ -150,7 +150,11 @@ class Planner:
 #: chat/completions, and with a reasoning_effort there, unlike astra -- but
 #: running those two conditions on different surfaces would make the
 #: comparison about the surface as much as the model. kimi is the same
-#: Responses shape against Moonshot rather than AIDP.
+#: Responses shape against Moonshot rather than AIDP, and deepseek against
+#: DeepSeek. deepseek stays on Responses for a second reason: with tools
+#: registered, its chat/completions surface rejects a turn whose earlier
+#: ``reasoning_content`` was not passed back, which the chat path does not do.
+#: Only deepseek-flash takes images; deepseek-v4-pro cannot see the cameras.
 PLANNERS: dict[str, Planner] = {
     "astra": Planner("gpt-6-astra", "responses", "2024-03-01-preview"),
     "gpt55": Planner("gpt-5.5-2026-04-24", "responses", "2024-03-01-preview"),
@@ -160,6 +164,17 @@ PLANNERS: dict[str, Planner] = {
         "2024-03-01-preview",
         endpoint="https://api.moonshot.cn/v1",
         api_key_env="MOONSHOT_API_KEY",
+        reasoning_effort="high",
+        timeout_s=180.0,
+        provider="openai",
+        pin_session=False,
+    ),
+    "deepseek": Planner(
+        "deepseek-flash",
+        "responses",
+        "2024-03-01-preview",
+        endpoint="https://api.deepseek.com",
+        api_key_env="DEEPSEEK_API_KEY",
         reasoning_effort="high",
         timeout_s=180.0,
         provider="openai",
@@ -189,6 +204,19 @@ _KIMI_REASONING_EFFORT = {
     "medium": "high",
     "high": "high",
     "max": "max",
+}
+#: DeepSeek accepts low / high / max and treats "none" as thinking off, so
+#: unlike Kimi "none" is kept rather than raised to "low".
+_DEEPSEEK_REASONING_EFFORT = {
+    "none": "none",
+    "low": "low",
+    "medium": "high",
+    "high": "high",
+    "max": "max",
+}
+_REASONING_EFFORT_BY_PLANNER = {
+    "kimi": ("Kimi K3", _KIMI_REASONING_EFFORT),
+    "deepseek": ("DeepSeek", _DEEPSEEK_REASONING_EFFORT),
 }
 _DEFAULT_MAX_LLM_CALLS = 100
 _DEFAULT_MAX_RETRIES = 12
@@ -373,13 +401,14 @@ def _required_base_url(env: Mapping[str, str], planner: Planner) -> str:
 
 def _reasoning_effort_for(name: str, requested: str) -> str:
     """Map a requested effort onto the values this planner's provider accepts."""
-    if name != "kimi":
+    if name not in _REASONING_EFFORT_BY_PLANNER:
         return requested
-    mapped = _KIMI_REASONING_EFFORT.get(requested.strip().lower())
+    label, table = _REASONING_EFFORT_BY_PLANNER[name]
+    mapped = table.get(requested.strip().lower())
     if mapped is None:
-        legal = ", ".join(sorted(_KIMI_REASONING_EFFORT))
+        legal = ", ".join(sorted(table))
         raise InfrastructureFailure(
-            f"L3_INSPECT_REASONING_EFFORT={requested!r} is not a Kimi K3 "
+            f"L3_INSPECT_REASONING_EFFORT={requested!r} is not a {label} "
             f"effort; expected one of: {legal}"
         )
     return mapped

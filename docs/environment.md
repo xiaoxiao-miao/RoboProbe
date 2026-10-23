@@ -26,7 +26,9 @@ host: a missing URL used to fall through to `https://api.openai.com/v1` and
 time out. `L3_INSPECT_PLANNER` is `astra` by default (gpt-6-astra on AIDP,
 `OPENAI_API_KEY`), `gpt55` for GPT-5.5 on the same AIDP account, and `kimi`
 for Kimi K3 on Moonshot (`MOONSHOT_API_KEY`; typical host
-`https://api.moonshot.cn/v1`). Setting `OPENAI_API_KEY_BACKUP` too needs
+`https://api.moonshot.cn/v1`), and `deepseek` for DeepSeek-V4.1-Flash
+(`deepseek-flash`) on DeepSeek (`DEEPSEEK_API_KEY`; host
+`https://api.deepseek.com`). Setting `OPENAI_API_KEY_BACKUP` too needs
 nothing at launch: a rate limit belongs to the account, so a throttled call
 moves to the other key rather than waiting. See
 [L3 Inspect README](../policy/RoboDojo_Agent_L3_Inspect/README.md).
@@ -38,16 +40,16 @@ this repository has no harness or `L5_*` run path.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `L3_INSPECT_PLANNER` | `astra` | `astra` (gpt-6-astra) or `gpt55` (gpt-5.5) on AIDP Responses, or `kimi` (kimi-k3) on Moonshot Responses; sets model, surface and key names together |
-| `L3_INSPECT_MODEL` | from the planner | Azure / Moonshot model name |
-| `L3_INSPECT_BASE_URL` | **required, no default** | Provider OpenAI-compatible `/v1` host. Unset refuses to start. For `kimi`, typically `https://api.moonshot.cn/v1` |
+| `L3_INSPECT_PLANNER` | `astra` | `astra` (gpt-6-astra) or `gpt55` (gpt-5.5) on AIDP Responses, `kimi` (kimi-k3) on Moonshot Responses, or `deepseek` (deepseek-flash) on DeepSeek Responses; sets model, surface and key names together |
+| `L3_INSPECT_MODEL` | from the planner | Azure / Moonshot / DeepSeek model name. On DeepSeek only `deepseek-flash` accepts images |
+| `L3_INSPECT_BASE_URL` | **required, no default** | Provider OpenAI-compatible `/v1` host. Unset refuses to start. For `kimi`, typically `https://api.moonshot.cn/v1`; for `deepseek`, `https://api.deepseek.com` |
 | `L3_INSPECT_API_VERSION` | from the planner | Azure API version (unused on Moonshot) |
 | `L3_INSPECT_API_KEY_ENV` | from the planner | Env vars holding API keys; a throttled key hands the call to the next |
 | `L3_INSPECT_MAX_LLM_CALLS` | `100` (EEF official 2100 default `170`) | Trial LLM budget |
 | `L3_INSPECT_MAX_RETRIES` | `3` | Provider retry attempts |
-| `L3_INSPECT_TIMEOUT_S` | `60` (`180` for `kimi`) | Per-request timeout (seconds) |
+| `L3_INSPECT_TIMEOUT_S` | `60` (`180` for `kimi` and `deepseek`) | Per-request timeout (seconds) |
 | `L3_INSPECT_API_STYLE` | from the planner | `responses` replays reasoning items across turns; `chat` restores `/chat/completions` and forwards the configured effort, which astra refuses alongside tools |
-| `L3_INSPECT_REASONING_EFFORT` | `medium` (`high` for `kimi`) | AIDP: `none`/`low`/`medium`/`high`. Kimi K3: `low`/`high`/`max` |
+| `L3_INSPECT_REASONING_EFFORT` | `medium` (`high` for `kimi` and `deepseek`) | AIDP: `none`/`low`/`medium`/`high`. Kimi K3: `low`/`high`/`max`. DeepSeek: `none` (thinking off)/`low`/`high`/`max` |
 | `L3_INSPECT_KEEP_ALL_IMAGES` | `1` | Keep all history JPEGs + AIDP session cache; `0` stubs older images |
 | `L3_INSPECT_IMAGE_HORIZON` | `2` | Stub window when keep-all images is off |
 | `L3_INSPECT_DEPTH` | `off` | **Must stay `off`.** RGB-only condition |

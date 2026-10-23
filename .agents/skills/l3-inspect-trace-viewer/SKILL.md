@@ -5,7 +5,9 @@ description: Launch the offline RoboDojo trace viewer that syncs planner tool ca
 
 # L3 Inspect Trace Viewer
 
-After an eval finishes, start the HTTP viewer that aligns `transcript.jsonl` with the three camera MP4s. Do not dump the transcript as a substitute.
+After an eval finishes, start the HTTP viewer that aligns `l3_inspect_transcript.json` with the three camera MP4s. Do not dump the transcript as a substitute.
+
+For runs launched with `docker/run_client.sh`, `bash docker/view_trace.sh --task <task> [--run <run_id>] [--layout N]` finds and pairs both directories itself; use the manual steps below for anything else.
 
 ## Pair directories from the same `ROBODOJO_RUN_ID`
 
@@ -16,7 +18,7 @@ After an eval finishes, start the HTTP viewer that aligns `transcript.jsonl` wit
 
 Both must be the same run. Videos are `episode_XXXXXXX_cam_{head,left_wrist,right_wrist}_success.mp4` or `_fail.mp4`.
 
-Confirm `transcript.jsonl` exists under the trace dir before launching.
+Confirm `l3_inspect_transcript.json` exists under the trace dir before launching.
 
 ## Interpreter and PATH
 

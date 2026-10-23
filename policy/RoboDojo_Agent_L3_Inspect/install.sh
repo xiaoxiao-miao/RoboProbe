@@ -24,4 +24,4 @@ else
 fi
 
 echo "[INSTALL] RoboDojo_Agent_L3_Inspect uses h5py==3.14.0, openai==3.8.0 and pillow==12.3.0."
-echo "[INSTALL] Set the provider key before running; L3_INSPECT_PLANNER picks the model (astra, gpt55, kimi)."
+echo "[INSTALL] Set the provider key before running; L3_INSPECT_PLANNER picks the model (astra, gpt55, kimi, deepseek)."

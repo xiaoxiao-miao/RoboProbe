@@ -140,6 +140,13 @@ RGB-only and joint-only; no inspect packages. See
 - Requires `L3_INSPECT_BASE_URL` and `OPENAI_API_KEY` (or a variable named in `L3_INSPECT_API_KEY_ENV`); no
   local-model fallback.
 
+### RoboDojo's Docker image
+
+When the simulator runs from RoboDojo's `robodojo:cuda12.8` image instead of a
+host `.venv`, `docker/` builds a client image with the planner dependencies,
+starts the host server, launches the container with the harnesses mounted, and
+replays the result. See [docker/README.md](../docker/README.md).
+
 **L5** is defined in the ladder but **not implemented** in this repository.
 There is no adapter, checkpoint, or eval entry point at that level.
 

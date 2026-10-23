@@ -9,7 +9,8 @@ joint actions.
 
 - **Level:** L3 LLM-as-Policy
 - **Status:** Alternative reference; no published score
-- **Models:** named planner profiles for GPT-6 Astra, GPT-5.5 and Kimi K3;
+- **Models:** named planner profiles for GPT-6 Astra, GPT-5.5, Kimi K3 and
+  DeepSeek-V4.1-Flash;
   provider endpoint and credentials are runtime configuration
 - **Prompt:** generated in [`policy.py`](policy.py), with optional task recipes
 - **Tools:** `move_joints`, `give_up`; optional probe-only `done`
@@ -27,7 +28,7 @@ metadata or reward internals. RoboDojo remains the only scorer.
 
 ## Provider configuration
 
-Select a profile with `L3_INSPECT_PLANNER=astra|gpt55|kimi`. The host is
+Select a profile with `L3_INSPECT_PLANNER=astra|gpt55|kimi|deepseek`. The host is
 required: there is no default, because a missing URL used to fall through
 to `https://api.openai.com/v1` and time out on the first call.
 
@@ -37,7 +38,9 @@ export L3_INSPECT_API_KEY_ENV=OPENAI_API_KEY
 export OPENAI_API_KEY=...
 ```
 
-For `kimi` the typical host is `https://api.moonshot.cn/v1`.
+For `kimi` the typical host is `https://api.moonshot.cn/v1`. For `deepseek`
+it is `https://api.deepseek.com` with the key in `DEEPSEEK_API_KEY`; keep the
+model on `deepseek-flash`, since `deepseek-v4-pro` does not accept images.
 
 `L3_INSPECT_MODEL`, `L3_INSPECT_API_STYLE`,
 `L3_INSPECT_API_VERSION`, `L3_INSPECT_REASONING_EFFORT` and timeout settings
